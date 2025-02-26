@@ -3,6 +3,9 @@ This is a simple puzzle game where you control a sliding block and must reach a 
 
 The game comes with 180 procedurally generated ([generator repository](https://github.com/DeathFuel/toroidal-maze-levelgen)) levels which greatly vary in difficulty. Each of them usually takes between 2 to 10 minutes to beat for the first time.
 
+## Example level playthrough
+https://github.com/user-attachments/assets/88cd7cfa-f3a3-43ac-b267-974fc2e71efa
+
 ## Controls
 
 | Keys | Actions |
