@@ -22,7 +22,7 @@ public class Render {
 
     // Working objects that might reduce the number of memory allocations
     private static final Matrix4d transform = new Matrix4d();
-    private static final FloatBuffer fb = BufferUtils.createFloatBuffer(16);
+    private static final FloatBuffer floatBuf16 = BufferUtils.createFloatBuffer(16);
 
     public static void init() {
         quadShaderProg = linkShaderProg("quad-vs", "quad-fs");
@@ -74,7 +74,6 @@ public class Render {
     public static int linkShaderProg(String vs, String fs) {
         int vsc = compileShader(vs, GL30.GL_VERTEX_SHADER);
         int fsc = compileShader(fs, GL30.GL_FRAGMENT_SHADER);
-
         int shaderProg = GL30.glCreateProgram();
         GL30.glAttachShader(shaderProg, vsc);
         GL30.glAttachShader(shaderProg, fsc);
@@ -96,13 +95,12 @@ public class Render {
                 .translate(scaleX/2, scaleY/2, 0)
                 .rotate(toRadians(rotationAngle), 0, 0, 1)
                 .translate(-scaleX/2, -scaleY/2, 0)
-                .scale(scaleX, scaleY, 1)
-                ;
+                .scale(scaleX, scaleY, 1);
 
-        transform.get(fb);
+        transform.get(floatBuf16);
 
         GL30.glUseProgram(quadShaderProg);
-        GL30.glUniformMatrix4fv(GL30.glGetUniformLocation(quadShaderProg, "transform"), false, fb);
+        GL30.glUniformMatrix4fv(GL30.glGetUniformLocation(quadShaderProg, "transform"), false, floatBuf16);
         GL30.glVertexAttribPointer(0, 2, GL30.GL_FLOAT, false, 0, 0L);
         GL30.glEnableVertexAttribArray(0);
 

@@ -12,7 +12,7 @@ import java.util.List;
 // A class that's in charge of the game board; it loads levels, places objects and controls the player position.
 public class Level {
     private static Player player = null;
-    private static int tx = 0, ty = 0; // Player position in tiles, relative to the top-left corner
+    private static int playerTileX = 0, playerTileY = 0;
     private static int exitX = 0, exitY = 0;
     private static final GameObject world = new GameObject();
     private static final ArrayList<Sprite> tiles = new ArrayList<>();
@@ -34,13 +34,13 @@ public class Level {
         );
 
         // Pre-generate walls
-        for (int i = 0; i < getTilesV(); i++) {
-            for (int j = 0; j < getTilesH(); j++) {
+        for (int row = 0; row < getTilesV(); row++) {
+            for (int col = 0; col < getTilesH(); col++) {
                 Sprite s = new SpriteManager.Builder("wall")
                         .setSize(tileSize * Globals.globalScale)
                         .setPosition(
-                                j * tileSize * Globals.globalScale,
-                                i * tileSize * Globals.globalScale
+                                col * tileSize * Globals.globalScale,
+                                row * tileSize * Globals.globalScale
                         )
                         .setZ(0)
                         .build();
@@ -57,6 +57,7 @@ public class Level {
     }
 
     public static void loadLevel(int index) {
+        player.forceStop();
         try {
             createLevel(levels.get(index));
         } catch (IndexOutOfBoundsException e) {
@@ -96,9 +97,9 @@ public class Level {
             level = level.substring(0, levelSize);
         }
         // Parse level string
-        for (int i = 0; i < getTilesV(); i++) { // Rows
-            for (int j = 0; j < getTilesH(); j++) { // Columns
-                int tilePos = i * getTilesH() + j;
+        for (int row = 0; row < getTilesV(); row++) {
+            for (int col = 0; col < getTilesH(); col++) {
+                int tilePos = row * getTilesH() + col;
                 char tileChar = level.charAt(tilePos);
                 if (tileChar == ' ') { continue; }
                 Sprite thisTile = tiles.get(tilePos);
@@ -108,14 +109,16 @@ public class Level {
                         thisTile.setTexture("wall");
                         break;
                     case 'p':
-                        tx = j;
-                        ty = i;
-                        player.playerObject.setPosition(tileSize * Globals.globalScale * tx, tileSize * Globals.globalScale * ty);
-                        player.forceStop();
+                        playerTileX = col;
+                        playerTileY = row;
+                        player.playerObject.setPosition(
+                                tileSize * Globals.globalScale * playerTileX,
+                                tileSize * Globals.globalScale * playerTileY
+                        );
                         break;
                     case 'e':
-                        exitX = j;
-                        exitY = i;
+                        exitX = col;
+                        exitY = row;
                         break;
                     default:
                         break;
@@ -128,34 +131,48 @@ public class Level {
     public static void trySlidePlayer(int dx, int dy) {
         if (player.moving()) { return; }
         // Calculate the longest line of empty tiles in a direction given by the vector (dx, dy). Can wrap around the screen.
-        int distance = -1; int cx = tx; int cy = ty; int lastX = tx; int lastY = ty;
+        int distance = -1;
+        int cx = playerTileX; int cy = playerTileY; // Position currently being examined
+        int lastX = playerTileX; int lastY = playerTileY; // Last recorded free position
         boolean wrapAround = false; boolean lastWrapped = false;
         while (currentLevel.charAt(cy * getTilesH() + cx) != '#') {
             lastWrapped = wrapAround; // Account for a literal edge case
 
-            lastX = cx;
-            cx += dx;
-            if (cx < 0) { cx += getTilesH(); wrapAround = true; }
-            else if (cx >= getTilesH()) { cx -= getTilesH(); wrapAround = true; }
+            if (dx != 0) {
+                lastX = cx;
+                cx += dx;
+                if (cx >= getTilesH()) {
+                    cx -= getTilesH(); wrapAround = true;
+                } else if (cx < 0) {
+                    cx += getTilesH(); wrapAround = true;
+                }
+            }
 
-            lastY = cy;
-            cy += dy;
-            if (cy < 0) { cy += getTilesV(); wrapAround = true; }
-            else if (cy >= getTilesV()) { cy -= getTilesV(); wrapAround = true; }
+            if (dy != 0) {
+                lastY = cy;
+                cy += dy;
+                if (cy >= getTilesV()) {
+                    cy -= getTilesV(); wrapAround = true;
+                } else if (cy < 0) {
+                    cy += getTilesV(); wrapAround = true;
+                }
+            }
 
             distance++;
-            if ((dx != 0 && distance > getTilesH()) || (dy != 0 && distance > getTilesV())) { return; } // Break loop when infinite wrapping would occur
+            if ((dx != 0 && distance > getTilesH()) || (dy != 0 && distance > getTilesV())) {
+                return; // Break loop when infinite wrapping would occur
+            }
         }
         if (distance <= 0) { return; }
         // Slide the player to the last free position
-        tx = lastX; ty = lastY;
-        player.slideTo(tileSize * Globals.globalScale * tx, tileSize * Globals.globalScale * ty, lastWrapped);
+        playerTileX = lastX; playerTileY = lastY;
+        player.slideTo(tileSize * Globals.globalScale * playerTileX, tileSize * Globals.globalScale * playerTileY, lastWrapped);
     }
 
     public static void update() {
         if (player != null) {
             player.update();
-            if (!player.moving() && tx == exitX && ty == exitY) {
+            if (!player.moving() && playerTileX == exitX && playerTileY == exitY) {
                 loadAdjacentLevel(1);
             }
         }

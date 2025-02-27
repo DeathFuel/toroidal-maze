@@ -60,21 +60,21 @@ public class Player {
         if (this.moving()) {
             double playerX = this.playerObject.position.x;
             double playerY = this.playerObject.position.y;
+
+            double framerateIndependentSpeed = moveSpeed * deltaTime;
+            boolean offX = (Math.abs(playerX - destX) > framerateIndependentSpeed * 1.5);
+            boolean offY = (Math.abs(playerY - destY) > framerateIndependentSpeed * 1.5);
+
             boolean wrappingAround = (this.State == moveState.MOVING_WRAP);
-
-            double indepSpeed = moveSpeed * deltaTime; // framerate-independent
-
-            boolean offX = (Math.abs(playerX - destX) > indepSpeed * 1.5);
-            boolean offY = (Math.abs(playerY - destY) > indepSpeed * 1.5);
             if (offX) {
                 int sign = (playerX > destX ^ wrappingAround) ? -1 : 1;
-                this.playerObject.move(sign * indepSpeed, 0);
+                this.playerObject.move(sign * framerateIndependentSpeed, 0);
             } else {
                 this.playerObject.position.x = destX;
             }
             if (offY) {
                 int sign = (playerY > destY ^ wrappingAround) ? -1 : 1;
-                this.playerObject.move(0, sign * indepSpeed);
+                this.playerObject.move(0, sign * framerateIndependentSpeed);
             } else {
                 this.playerObject.position.y = destY;
             }

@@ -6,13 +6,13 @@
 
     <groupId>fuel</groupId>
     <artifactId>toroidal-maze</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lwjgl.version>3.3.4</lwjgl.version>
+        <lwjgl.version>3.3.6</lwjgl.version>
         <joml.version>1.10.7</joml.version>
         <lwjgl.natives>natives-linux</lwjgl.natives>
     </properties>
